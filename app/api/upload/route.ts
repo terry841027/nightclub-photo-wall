@@ -46,7 +46,7 @@ export async function POST(req: NextRequest) {
     .upload(path, bytes, { contentType: file.type, upsert: false });
 
   if (uploadError) {
-    return NextResponse.json({ error: '上傳失敗,請再試一次' }, { status: 500 });
+    return NextResponse.json({ error: `上傳失敗:${uploadError.message}` }, { status: 500 });
   }
 
   const { data: publicUrlData } = supabase.storage.from(PHOTOS_BUCKET).getPublicUrl(path);
@@ -64,7 +64,7 @@ export async function POST(req: NextRequest) {
 
   if (insertError) {
     await supabase.storage.from(PHOTOS_BUCKET).remove([path]);
-    return NextResponse.json({ error: '儲存失敗,請再試一次' }, { status: 500 });
+    return NextResponse.json({ error: `儲存失敗:${insertError.message}` }, { status: 500 });
   }
 
   return NextResponse.json({ photo, requireApproval });
