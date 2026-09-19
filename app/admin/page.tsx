@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
+import PhotoCarousel from '@/components/PhotoCarousel';
 
 interface Photo {
   id: string;
@@ -159,6 +160,11 @@ export default function AdminPage() {
 
   return (
     <main className="admin-page">
+      <section className="admin-section">
+        <h2>目前輪播預覽</h2>
+        <PhotoCarousel className="carousel-preview" />
+      </section>
+
       <section className="admin-section">
         <h2>上傳網址 QR Code</h2>
         {uploadUrl && (

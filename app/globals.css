@@ -292,21 +292,43 @@ a {
   font-size: 13px;
 }
 
-/* Display page (LED / Arena source) */
-.display-page {
+/* Photo carousel (shared by the LED display page and the admin preview) */
+.carousel {
   position: relative;
-  width: 100vw;
-  height: 100vh;
   background: #000;
   overflow: hidden;
 }
 
-.display-empty {
+.carousel-fullscreen {
+  width: 100vw;
+  height: 100vh;
+}
+
+.carousel-preview {
+  width: 200px;
+  max-width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  border: 1px solid #3a3145;
+  margin: 0 auto;
+}
+
+.carousel-empty {
   display: flex;
   align-items: center;
   justify-content: center;
   color: #666;
+  text-align: center;
+  padding: 12px;
+}
+
+.carousel-fullscreen.carousel-empty {
   font-size: 24px;
+}
+
+.carousel-preview .slide-caption {
+  padding: 12px 8px 14px;
+  font-size: 10px;
 }
 
 .slide {
