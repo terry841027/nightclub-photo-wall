@@ -21,6 +21,7 @@ export default function AdminPage() {
   const [loginError, setLoginError] = useState('');
   const [pending, setPending] = useState<Photo[]>([]);
   const [requireApproval, setRequireApproval] = useState(true);
+  const [slideDurationMs, setSlideDurationMs] = useState(6000);
   const [uploadUrl, setUploadUrl] = useState('');
 
   const verifyPasscode = useCallback(async (code: string): Promise<boolean> => {
@@ -77,6 +78,9 @@ export default function AdminPage() {
     if (res.ok) {
       const data = await res.json();
       setRequireApproval(data.requireApproval);
+      if (typeof data.slideDurationMs === 'number') {
+        setSlideDurationMs(data.slideDurationMs);
+      }
     }
   }, []);
 
@@ -95,6 +99,15 @@ export default function AdminPage() {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json', 'x-admin-passcode': passcode },
       body: JSON.stringify({ requireApproval: next }),
+    });
+  }
+
+  async function setSlideDuration(ms: number) {
+    setSlideDurationMs(ms);
+    await fetch('/api/settings', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-passcode': passcode },
+      body: JSON.stringify({ slideDurationMs: ms }),
     });
   }
 
@@ -166,6 +179,28 @@ export default function AdminPage() {
           >
             {requireApproval ? '開' : '關'}
           </button>
+        </div>
+      </section>
+
+      <section className="admin-section">
+        <div className="settings-row">
+          <span>輪播速度</span>
+          <div className="preset-buttons">
+            <button
+              type="button"
+              className={`btn preset-btn ${slideDurationMs === 5000 ? 'active' : ''}`}
+              onClick={() => setSlideDuration(5000)}
+            >
+              輪播5秒
+            </button>
+            <button
+              type="button"
+              className={`btn preset-btn ${slideDurationMs === 10000 ? 'active' : ''}`}
+              onClick={() => setSlideDuration(10000)}
+            >
+              輪播10秒
+            </button>
+          </div>
         </div>
       </section>
 

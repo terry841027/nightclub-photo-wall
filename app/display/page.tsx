@@ -10,11 +10,12 @@ interface Photo {
 }
 
 const POLL_MS = 5000;
-const SLIDE_MS = 6000;
+const DEFAULT_SLIDE_MS = 6000;
 
 export default function DisplayPage() {
   const [photos, setPhotos] = useState<Photo[]>([]);
   const [index, setIndex] = useState(0);
+  const [slideMs, setSlideMs] = useState(DEFAULT_SLIDE_MS);
 
   const loadPhotos = useCallback(async () => {
     try {
@@ -27,19 +28,36 @@ export default function DisplayPage() {
     }
   }, []);
 
+  const loadSettings = useCallback(async () => {
+    try {
+      const res = await fetch('/api/settings', { cache: 'no-store' });
+      if (!res.ok) return;
+      const data = await res.json();
+      if (typeof data.slideDurationMs === 'number') {
+        setSlideMs(data.slideDurationMs);
+      }
+    } catch {
+      // ignore transient network errors; the next poll will retry
+    }
+  }, []);
+
   useEffect(() => {
     loadPhotos();
-    const timer = setInterval(loadPhotos, POLL_MS);
+    loadSettings();
+    const timer = setInterval(() => {
+      loadPhotos();
+      loadSettings();
+    }, POLL_MS);
     return () => clearInterval(timer);
-  }, [loadPhotos]);
+  }, [loadPhotos, loadSettings]);
 
   useEffect(() => {
     if (photos.length === 0) return;
     const timer = setInterval(() => {
       setIndex((i) => (i + 1) % photos.length);
-    }, SLIDE_MS);
+    }, slideMs);
     return () => clearInterval(timer);
-  }, [photos.length]);
+  }, [photos.length, slideMs]);
 
   if (photos.length === 0) {
     return (

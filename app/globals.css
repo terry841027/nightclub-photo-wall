@@ -213,6 +213,23 @@ a {
   background: #17101f;
   border-radius: 12px;
   padding: 14px 16px;
+  gap: 12px;
+}
+
+.preset-buttons {
+  display: flex;
+  gap: 8px;
+}
+
+.preset-btn {
+  padding: 8px 16px;
+  font-size: 13px;
+  background: #3a3145;
+  color: #f5f0ff;
+}
+
+.preset-btn.active {
+  background: linear-gradient(135deg, #ff2fb0, #7b2ff7);
 }
 
 .toggle {
