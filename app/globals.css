@@ -188,6 +188,12 @@ a {
   opacity: 0.85;
 }
 
+.quick-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
 .qr-box {
   display: flex;
   flex-direction: column;

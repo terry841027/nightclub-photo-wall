@@ -242,6 +242,18 @@ export default function AdminPage() {
       </section>
 
       <section className="admin-section">
+        <h2>快速連結</h2>
+        <div className="quick-links">
+          <a className="btn btn-primary" href="/upload" target="_blank" rel="noopener noreferrer">
+            開啟觀眾上傳頁
+          </a>
+          <a className="btn btn-primary" href="/display" target="_blank" rel="noopener noreferrer">
+            開啟播放頁(LED)
+          </a>
+        </div>
+      </section>
+
+      <section className="admin-section">
         <h2>上傳網址 QR Code</h2>
         {uploadUrl && (
           <div className="qr-box">
