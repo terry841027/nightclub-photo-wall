@@ -232,6 +232,82 @@ a {
   background: linear-gradient(135deg, #ff2fb0, #7b2ff7);
 }
 
+.library-upload-picker {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 9 / 16;
+  width: 140px;
+  margin: 0 auto 12px;
+  border: 2px dashed #7b2ff7;
+  border-radius: 12px;
+  overflow: hidden;
+  cursor: pointer;
+  background: rgba(123, 47, 247, 0.08);
+  font-size: 13px;
+  text-align: center;
+  padding: 8px;
+}
+
+.library-upload-picker .preview {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.h-scroll-list {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 6px 2px 10px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.h-scroll-item {
+  position: relative;
+  flex: 0 0 auto;
+  width: 110px;
+}
+
+.h-scroll-item img {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  object-fit: cover;
+  border-radius: 10px;
+  display: block;
+  background: #17101f;
+}
+
+.h-scroll-delete {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ef4444;
+  color: #fff;
+  border: 2px solid #0b0410;
+  font-size: 14px;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+
+.h-scroll-badge {
+  position: absolute;
+  bottom: 4px;
+  left: 4px;
+  font-size: 9px;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: rgba(0, 0, 0, 0.6);
+  color: #fff;
+}
+
 .toggle {
   padding: 8px 20px;
   border-radius: 999px;
@@ -352,10 +428,10 @@ a {
   position: absolute;
   left: 0;
   right: 0;
-  bottom: 0;
+  top: 0;
   margin: 0;
-  padding: 32px 24px 40px;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.85), transparent);
+  padding: 40px 24px 32px;
+  background: linear-gradient(to bottom, rgba(0, 0, 0, 0.85), transparent);
   color: #fff;
   font-size: clamp(20px, 4vw, 36px);
   font-weight: 700;

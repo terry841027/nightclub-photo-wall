@@ -8,6 +8,7 @@ create table if not exists photos (
   image_url text not null,
   caption text,
   status text not null default 'pending' check (status in ('pending', 'approved')),
+  source text not null default 'guest' check (source in ('guest', 'staff')),
   created_at timestamptz not null default now()
 );
 

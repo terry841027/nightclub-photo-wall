@@ -1,19 +1,22 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { QRCodeSVG } from 'qrcode.react';
 import PhotoCarousel from '@/components/PhotoCarousel';
+import { resizeImage } from '@/lib/resizeImage';
 
 interface Photo {
   id: string;
   image_url: string;
   caption: string | null;
   status: string;
+  source?: 'guest' | 'staff';
   created_at: string;
 }
 
 const STORAGE_KEY = 'photowall_admin_passcode';
 const POLL_MS = 5000;
+const MAX_CAPTION_LENGTH = 60;
 
 export default function AdminPage() {
   const [passcode, setPasscode] = useState('');
@@ -21,9 +24,17 @@ export default function AdminPage() {
   const [checking, setChecking] = useState(true);
   const [loginError, setLoginError] = useState('');
   const [pending, setPending] = useState<Photo[]>([]);
+  const [approved, setApproved] = useState<Photo[]>([]);
   const [requireApproval, setRequireApproval] = useState(true);
   const [slideDurationMs, setSlideDurationMs] = useState(6000);
   const [uploadUrl, setUploadUrl] = useState('');
+
+  const libraryFileInputRef = useRef<HTMLInputElement>(null);
+  const [libraryFile, setLibraryFile] = useState<File | null>(null);
+  const [libraryPreviewUrl, setLibraryPreviewUrl] = useState<string | null>(null);
+  const [libraryCaption, setLibraryCaption] = useState('');
+  const [libraryBusy, setLibraryBusy] = useState(false);
+  const [libraryMessage, setLibraryMessage] = useState('');
 
   const verifyPasscode = useCallback(async (code: string): Promise<boolean> => {
     const res = await fetch('/api/admin/login', {
@@ -74,6 +85,14 @@ export default function AdminPage() {
     }
   }, []);
 
+  const loadApproved = useCallback(async () => {
+    const res = await fetch('/api/photos?status=approved', { cache: 'no-store' });
+    if (res.ok) {
+      const data = await res.json();
+      setApproved(data.photos ?? []);
+    }
+  }, []);
+
   const loadSettings = useCallback(async () => {
     const res = await fetch('/api/settings');
     if (res.ok) {
@@ -88,10 +107,14 @@ export default function AdminPage() {
   useEffect(() => {
     if (!authed) return;
     loadPending(passcode);
+    loadApproved();
     loadSettings();
-    const timer = setInterval(() => loadPending(passcode), POLL_MS);
+    const timer = setInterval(() => {
+      loadPending(passcode);
+      loadApproved();
+    }, POLL_MS);
     return () => clearInterval(timer);
-  }, [authed, passcode, loadPending, loadSettings]);
+  }, [authed, passcode, loadPending, loadApproved, loadSettings]);
 
   async function toggleRequireApproval() {
     const next = !requireApproval;
@@ -119,6 +142,7 @@ export default function AdminPage() {
       headers: { 'Content-Type': 'application/json', 'x-admin-passcode': passcode },
       body: JSON.stringify({ status: 'approved' }),
     });
+    loadApproved();
   }
 
   async function reject(id: string) {
@@ -127,6 +151,58 @@ export default function AdminPage() {
       method: 'DELETE',
       headers: { 'x-admin-passcode': passcode },
     });
+  }
+
+  async function deleteApproved(id: string) {
+    setApproved((prev) => prev.filter((p) => p.id !== id));
+    await fetch(`/api/photos/${id}`, {
+      method: 'DELETE',
+      headers: { 'x-admin-passcode': passcode },
+    });
+  }
+
+  function handleLibraryFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setLibraryFile(file);
+    setLibraryPreviewUrl(URL.createObjectURL(file));
+    setLibraryMessage('');
+  }
+
+  async function handleLibrarySubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!libraryFile) {
+      setLibraryMessage('請先選擇一張照片');
+      return;
+    }
+    setLibraryBusy(true);
+    setLibraryMessage('');
+    try {
+      const resized = await resizeImage(libraryFile);
+      const formData = new FormData();
+      formData.append('photo', resized, 'photo.jpg');
+      formData.append('caption', libraryCaption);
+
+      const res = await fetch('/api/admin/photos', {
+        method: 'POST',
+        headers: { 'x-admin-passcode': passcode },
+        body: formData,
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data?.error || '上傳失敗');
+      }
+
+      setLibraryFile(null);
+      setLibraryPreviewUrl(null);
+      setLibraryCaption('');
+      if (libraryFileInputRef.current) libraryFileInputRef.current.value = '';
+      loadApproved();
+    } catch (err) {
+      setLibraryMessage(err instanceof Error ? err.message : '上傳失敗,請再試一次');
+    } finally {
+      setLibraryBusy(false);
+    }
   }
 
   if (checking) {
@@ -207,6 +283,62 @@ export default function AdminPage() {
               輪播10秒
             </button>
           </div>
+        </div>
+      </section>
+
+      <section className="admin-section">
+        <h2>照片庫上傳(預設輪播)</h2>
+        <form onSubmit={handleLibrarySubmit}>
+          <label className="library-upload-picker">
+            {libraryPreviewUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={libraryPreviewUrl} alt="預覽" className="preview" />
+            ) : (
+              <span>點這裡選照片</span>
+            )}
+            <input
+              ref={libraryFileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleLibraryFileChange}
+              hidden
+            />
+          </label>
+          <input
+            type="text"
+            className="caption-input"
+            placeholder="留言(選填)"
+            value={libraryCaption}
+            maxLength={MAX_CAPTION_LENGTH}
+            onChange={(e) => setLibraryCaption(e.target.value)}
+            style={{ marginBottom: 12 }}
+          />
+          {libraryMessage && <p className="error-text">{libraryMessage}</p>}
+          <button className="btn btn-primary" type="submit" disabled={libraryBusy} style={{ width: '100%' }}>
+            {libraryBusy ? '上傳中...' : '加入照片庫'}
+          </button>
+        </form>
+      </section>
+
+      <section className="admin-section">
+        <h2>目前輪播中的照片 ({approved.length})</h2>
+        {approved.length === 0 && <p className="empty-text">目前沒有正在輪播的照片</p>}
+        <div className="h-scroll-list">
+          {approved.map((photo) => (
+            <div key={photo.id} className="h-scroll-item">
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img src={photo.image_url} alt="" />
+              <span className="h-scroll-badge">{photo.source === 'staff' ? '照片庫' : '客人'}</span>
+              <button
+                type="button"
+                className="h-scroll-delete"
+                onClick={() => deleteApproved(photo.id)}
+                aria-label="刪除"
+              >
+                ×
+              </button>
+            </div>
+          ))}
         </div>
       </section>
 

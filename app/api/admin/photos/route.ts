@@ -1,10 +1,15 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getSupabaseAdmin } from '@/lib/supabaseAdmin';
+import { isAdminAuthorized } from '@/lib/auth';
 import { uploadPhotoFile } from '@/lib/uploadPhoto';
 
 export const runtime = 'nodejs';
 
 export async function POST(req: NextRequest) {
+  if (!isAdminAuthorized(req)) {
+    return NextResponse.json({ error: '未授權' }, { status: 401 });
+  }
+
   let supabase;
   try {
     supabase = getSupabaseAdmin();
@@ -21,24 +26,11 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: '缺少照片檔案' }, { status: 400 });
   }
 
-  const { data: settingRow } = await supabase
-    .from('settings')
-    .select('value')
-    .eq('key', 'require_approval')
-    .maybeSingle();
-  const requireApproval = settingRow ? settingRow.value === 'true' : true;
-
-  const result = await uploadPhotoFile(
-    supabase,
-    file,
-    caption,
-    requireApproval ? 'pending' : 'approved',
-    'guest'
-  );
+  const result = await uploadPhotoFile(supabase, file, caption, 'approved', 'staff');
 
   if (result.error) {
     return NextResponse.json({ error: result.error }, { status: 400 });
   }
 
-  return NextResponse.json({ photo: result.photo, requireApproval });
+  return NextResponse.json({ photo: result.photo });
 }

@@ -21,7 +21,7 @@ export async function GET(req: NextRequest) {
 
   const { data, error } = await supabase
     .from('photos')
-    .select('id, image_url, caption, status, created_at')
+    .select('id, image_url, caption, status, source, created_at')
     .eq('status', status)
     .order('created_at', { ascending: status === 'pending' })
     .limit(100);
