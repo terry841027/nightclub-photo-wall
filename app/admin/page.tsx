@@ -27,7 +27,10 @@ export default function AdminPage() {
   const [approved, setApproved] = useState<Photo[]>([]);
   const [requireApproval, setRequireApproval] = useState(true);
   const [slideDurationMs, setSlideDurationMs] = useState(6000);
+  const [captionFontSizePx, setCaptionFontSizePx] = useState(36);
+  const [captionPositionPercent, setCaptionPositionPercent] = useState(6);
   const [uploadUrl, setUploadUrl] = useState('');
+  const captionDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const libraryFileInputRef = useRef<HTMLInputElement>(null);
   const [libraryFile, setLibraryFile] = useState<File | null>(null);
@@ -101,6 +104,12 @@ export default function AdminPage() {
       if (typeof data.slideDurationMs === 'number') {
         setSlideDurationMs(data.slideDurationMs);
       }
+      if (typeof data.captionFontSizePx === 'number') {
+        setCaptionFontSizePx(data.captionFontSizePx);
+      }
+      if (typeof data.captionPositionPercent === 'number') {
+        setCaptionPositionPercent(data.captionPositionPercent);
+      }
     }
   }, []);
 
@@ -133,6 +142,32 @@ export default function AdminPage() {
       headers: { 'Content-Type': 'application/json', 'x-admin-passcode': passcode },
       body: JSON.stringify({ slideDurationMs: ms }),
     });
+  }
+
+  function updateCaptionSetting(partial: {
+    captionFontSizePx?: number;
+    captionPositionPercent?: number;
+  }) {
+    if (captionDebounceRef.current) clearTimeout(captionDebounceRef.current);
+    captionDebounceRef.current = setTimeout(() => {
+      fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'x-admin-passcode': passcode },
+        body: JSON.stringify(partial),
+      });
+    }, 400);
+  }
+
+  function handleCaptionFontSizeChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = Number(e.target.value);
+    setCaptionFontSizePx(v);
+    updateCaptionSetting({ captionFontSizePx: v });
+  }
+
+  function handleCaptionPositionChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const v = Number(e.target.value);
+    setCaptionPositionPercent(v);
+    updateCaptionSetting({ captionPositionPercent: v });
   }
 
   async function approve(id: string) {
@@ -294,6 +329,42 @@ export default function AdminPage() {
             >
               輪播10秒
             </button>
+          </div>
+        </div>
+      </section>
+
+      <section className="admin-section">
+        <h2>留言文字設定</h2>
+        <div className="slider-row">
+          <div className="slider-label">
+            <span>文字大小</span>
+            <span className="slider-value">{captionFontSizePx}px</span>
+          </div>
+          <input
+            type="range"
+            min={16}
+            max={96}
+            step={2}
+            value={captionFontSizePx}
+            onChange={handleCaptionFontSizeChange}
+          />
+        </div>
+        <div className="slider-row">
+          <div className="slider-label">
+            <span>文字高低位置</span>
+            <span className="slider-value">{captionPositionPercent}%</span>
+          </div>
+          <input
+            type="range"
+            min={0}
+            max={85}
+            step={1}
+            value={captionPositionPercent}
+            onChange={handleCaptionPositionChange}
+          />
+          <div className="slider-hint">
+            <span>最上面</span>
+            <span>最下面</span>
           </div>
         </div>
       </section>
