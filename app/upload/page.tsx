@@ -119,6 +119,8 @@ export default function UploadPage() {
   return (
     <main className="upload-page">
       <form className="upload-card" onSubmit={handleSubmit}>
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/logo.png" alt="" className="brand-logo" />
         <h1>上傳你的照片</h1>
 
         <label className="photo-picker">

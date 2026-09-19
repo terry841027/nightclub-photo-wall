@@ -95,6 +95,13 @@ a {
   text-align: center;
 }
 
+.brand-logo {
+  width: 100%;
+  max-width: 220px;
+  margin: 0 auto;
+  object-fit: contain;
+}
+
 .upload-card h1 {
   font-size: 22px;
   margin: 0 0 8px;
