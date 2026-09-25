@@ -196,6 +196,24 @@ export default function AdminPage() {
     });
   }
 
+  async function moveApproved(index: number, direction: -1 | 1) {
+    const otherIndex = index + direction;
+    if (otherIndex < 0 || otherIndex >= approved.length) return;
+
+    const a = approved[index];
+    const b = approved[otherIndex];
+    const next = [...approved];
+    next[index] = b;
+    next[otherIndex] = a;
+    setApproved(next);
+
+    await fetch('/api/photos/reorder', {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json', 'x-admin-passcode': passcode },
+      body: JSON.stringify({ firstId: a.id, secondId: b.id }),
+    });
+  }
+
   function handleLibraryFileChange(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -407,7 +425,7 @@ export default function AdminPage() {
         <h2>目前輪播中的照片 ({approved.length})</h2>
         {approved.length === 0 && <p className="empty-text">目前沒有正在輪播的照片</p>}
         <div className="h-scroll-list">
-          {approved.map((photo) => (
+          {approved.map((photo, index) => (
             <div key={photo.id} className="h-scroll-item">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={photo.image_url} alt="" />
@@ -420,6 +438,24 @@ export default function AdminPage() {
               >
                 ×
               </button>
+              <div className="h-scroll-move-row">
+                <button
+                  type="button"
+                  onClick={() => moveApproved(index, -1)}
+                  disabled={index === 0}
+                  aria-label="往前移"
+                >
+                  ‹
+                </button>
+                <button
+                  type="button"
+                  onClick={() => moveApproved(index, 1)}
+                  disabled={index === approved.length - 1}
+                  aria-label="往後移"
+                >
+                  ›
+                </button>
+              </div>
             </div>
           ))}
         </div>

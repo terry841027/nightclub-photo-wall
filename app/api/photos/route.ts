@@ -19,12 +19,16 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: '伺服器尚未設定完成' }, { status: 500 });
   }
 
-  const { data, error } = await supabase
+  const query = supabase
     .from('photos')
-    .select('id, image_url, caption, status, source, created_at')
+    .select('id, image_url, caption, status, source, created_at, sort_order')
     .eq('status', status)
-    .order('created_at', { ascending: status === 'pending' })
     .limit(100);
+
+  const { data, error } =
+    status === 'approved'
+      ? await query.order('sort_order', { ascending: true })
+      : await query.order('created_at', { ascending: true });
 
   if (error) {
     return NextResponse.json({ error: '讀取失敗' }, { status: 500 });

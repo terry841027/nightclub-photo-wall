@@ -334,6 +334,29 @@ a {
   padding: 0;
 }
 
+.h-scroll-move-row {
+  display: flex;
+  gap: 4px;
+  margin-top: 6px;
+}
+
+.h-scroll-move-row button {
+  flex: 1;
+  padding: 6px 0;
+  border-radius: 8px;
+  background: #3a3145;
+  color: #f5f0ff;
+  border: none;
+  font-size: 15px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.h-scroll-move-row button:disabled {
+  opacity: 0.25;
+  cursor: not-allowed;
+}
+
 .h-scroll-badge {
   position: absolute;
   bottom: 4px;
