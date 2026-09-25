@@ -301,12 +301,15 @@ a {
 }
 
 .h-scroll-item {
-  position: relative;
   flex: 0 0 auto;
   width: 110px;
 }
 
-.h-scroll-item img {
+.h-scroll-photo {
+  position: relative;
+}
+
+.h-scroll-photo img {
   width: 100%;
   aspect-ratio: 9 / 16;
   object-fit: cover;
@@ -359,7 +362,7 @@ a {
 
 .h-scroll-badge {
   position: absolute;
-  bottom: 4px;
+  top: 4px;
   left: 4px;
   font-size: 9px;
   padding: 2px 6px;

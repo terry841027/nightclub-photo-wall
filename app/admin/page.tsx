@@ -427,17 +427,19 @@ export default function AdminPage() {
         <div className="h-scroll-list">
           {approved.map((photo, index) => (
             <div key={photo.id} className="h-scroll-item">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={photo.image_url} alt="" />
-              <span className="h-scroll-badge">{photo.source === 'staff' ? '照片庫' : '客人'}</span>
-              <button
-                type="button"
-                className="h-scroll-delete"
-                onClick={() => deleteApproved(photo.id)}
-                aria-label="刪除"
-              >
-                ×
-              </button>
+              <div className="h-scroll-photo">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={photo.image_url} alt="" />
+                <span className="h-scroll-badge">{photo.source === 'staff' ? '照片庫' : '客人'}</span>
+                <button
+                  type="button"
+                  className="h-scroll-delete"
+                  onClick={() => deleteApproved(photo.id)}
+                  aria-label="刪除"
+                >
+                  ×
+                </button>
+              </div>
               <div className="h-scroll-move-row">
                 <button
                   type="button"
